@@ -1,66 +1,60 @@
 \section{Introduction}
 \label{sec:intro}
 
-Many materials comprise networks of long, overlapping strands: carbon-nanotube
-sheets, collagen in connective tissue, paper, nonwoven textiles,
-fibre-reinforced composites and twisted ropes
-\citep{wang2015twisting,allan2025rope}. Their effective properties, from
-stiffness and strength to conductivity and fracture resistance, depend on
-network geometry, constituent behaviour and inter-strand interactions. For
-example, load transfer between nanotubes can limit the stiffness and strength
-of a nanotube assembly despite the high modulus of each tube
+Many materials comprise networks of long, overlapping strands, including
+carbon-nanotube (CNT) sheets, collagen in connective tissue, paper and nonwoven
+textiles. Their stiffness, strength and conductivity depend on network
+geometry, constituent behaviour and inter-strand interactions. For example,
+load transfer between nanotubes can limit an assembly's stiffness and strength
+despite the high modulus of each tube
 \citep{devolder2013cnt,coleman2006small,volkov2010structural,%
 ostanin2013distinct,ostanin2019size,wittmaack2018mesoscopic}.
-Predictive models therefore combine constitutive and interaction laws with
-geometric inputs: each strand's length, thickness, orientation, local curvature
-and connectivity. Outside materials science, DNA fibre spreading assays measure
-the length ratio between two labelled replication tracts along individual
-fibres \citep{playout2026dnai}, while time-resolved actin imaging tracks
-filament reorganisation within living cells \citep{osterlund2026graft}.
+Predictive models therefore require geometric inputs such as strand length,
+orientation, curvature and connectivity. Bulk image measurements such as
+coverage and orientation do not establish which visible segments belong to
+the same strand \citep{dong2022detecting,imtiaz2023facile,beigzadeh2024utilizing}.
+Recovering that identity is necessary to measure individual strands end to end.
 
-Micrographs show strand networks, but routine image analysis yields only bulk
-measures such as coverage and orientation
-\citep{dong2022detecting,imtiaz2023facile,beigzadeh2024utilizing}. Measuring
-strand-length distributions or crossings requires each strand to be recovered
-as a separate, end-to-end object.
+This is an instance-segmentation problem in which elongated, open curves may
+share pixels at crossings. Crossings merge distinct strands into one mask
+component, whereas signal gaps split one strand into fragments whose tips can
+be indistinguishable from genuine ends. Reconstruction must therefore decide
+which segments continue through each junction and which reconnect across a
+gap. Here, we address this task from a binary strand-axis mask, whose foreground
+pixels mark strand centrelines.
 
-This is an instance-segmentation problem with unusual geometry: the objects are
-elongated, open curves whose identities must be inferred from directional
-continuity rather than from shape or size. Crossings merge distinct strands
-into one mask component, whereas signal gaps split one strand into fragments
-indistinguishable from genuine ends. Reconstruction must therefore decide which
-arms continue through each junction and which tips reconnect across a gap. This
-paper addresses that task from a binary strand-axis mask.
+Existing methods recover strand continuity using local pairing rules, learned
+image features or joint optimisation. However, greedy pairing can commit to
+locally plausible but incompatible continuations, while alternatives may
+require annotated training data, restrict the number of segments considered
+at a junction, or depend on anatomical seeds
+\citep{zhang2017sifne,liu2019intersection,playout2026dnai,de2016graph}.
+The remaining need is to resolve competing continuations at complex junctions
+from a mask alone, while allowing genuine ends, reconnecting gaps and retaining
+shared crossing pixels. Section~\ref{sec:related} reviews these approaches and
+their relation to the present work.
 
-PLECTA's core contribution is exact maximum-weight \emph{partial} matching of
-all arms at junctions of any degree. Its explicit unmatched-arm penalty allows
-genuine terminations rather than forcing every arm into a continuation. Using
-only a binary mask, PLECTA combines this matching with global gap-bridging
-gates, iterative refitting of tangent and curvature frames along assembled
-chains, and overlapping output, so crossing pixels may belong to multiple
-strands. These ingredients are individually established; to our knowledge no
-prior method combines them, as Section~\ref{sec:related} shows. The
-implementation is deterministic: identical inputs and fixed parameters produce
-identical outputs.
+PLECTA addresses this need by jointly selecting pairs of arms, the strand
+segments entering a junction, while allowing arms to remain unpaired. It
+solves an exact maximum-weight \emph{partial}-matching problem at each junction,
+with an explicit penalty for unmatched arms and no restriction on junction
+degree. It combines this decision with geometric checks for reconnecting gaps
+and updates to direction and curvature estimates as longer strands are
+assembled. The output allows crossing pixels to belong to multiple strands.
+These ingredients are individually established; their combination is the
+contribution of this work. Reconstruction is deterministic for fixed inputs
+and parameters and assumes directional continuity, targeting semiflexible
+networks whose strands maintain their direction locally through crossings.
 
-PLECTA assumes directional continuity across junctions and therefore targets
-semiflexible strand networks; Section~\ref{sec:limitations} discusses this
-limitation.
-
-For SEM images, PLECTA operates on binary strand-axis masks supplied by an
-upstream segmenter \citep{ruehle2021workflow}. We evaluate it on synthetic
-scenes and annotated CNT-sheet micrographs; paired clean and degraded masks
-isolate the effect of mask degradation.
-
-A separate image-informed stage estimates which strand lies on top at each
-crossing from the corresponding greyscale image. We present this depth ordering
-as a proof of concept, not a validated three-dimensional reconstruction.
-
-Across the evaluated datasets, PLECTA reconstructed strand identity more
-accurately than the compared methods, while performance remained sensitive to
-network density and mask quality.
-
-Section~\ref{sec:related} reviews related work; Section~\ref{sec:methods}
-describes the data, reconstruction and evaluation; Section~\ref{sec:results}
-reports the results; and Section~\ref{sec:conclusions} states the conclusions,
-scope and limitations.
+We evaluate PLECTA on synthetic scenes and annotated scanning electron
+microscopy (SEM) images of CNT sheets, using paired clean and degraded masks
+to isolate the effect of mask quality. Across the evaluated datasets, PLECTA
+reconstructed strand identity more accurately than the compared methods,
+although performance remained sensitive to network density and mask quality.
+For SEM images, an upstream segmenter supplies the strand-axis masks
+\citep{ruehle2021workflow}. A separate stage uses the corresponding greyscale
+image to estimate which strand lies on top at each crossing; this is a proof
+of concept for depth ordering, not a validated three-dimensional
+reconstruction. Section~\ref{sec:methods} describes the workflow and evaluation,
+Section~\ref{sec:results} reports the results, and
+Section~\ref{sec:conclusions} discusses conclusions and limitations.
