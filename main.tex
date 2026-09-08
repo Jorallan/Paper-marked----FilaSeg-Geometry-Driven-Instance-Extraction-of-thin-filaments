@@ -32,16 +32,10 @@
 \definecolor{fsorange}{HTML}{DD6B20}
 \definecolor{fsgreen}{HTML}{2F855A}
 
-% ── TikZ vocabulary for the two structure figures ──────────────────────────
-%  figures/fig_pipeline_scope.tex and figures/fig_pipeline_upstream.tex are
-%  drawn in the document's own face at the document's own size.  Everything is
-%  achromatic except one accent, used only for the boundary of what the paper
-%  evaluates.  \footnotesize is 9 pt and \scriptsize 8 pt at this class
-%  option, so the 7 pt floor that check_type_scale.py polices for the
-%  matplotlib figures holds here structurally.
-\definecolor{pkink}{HTML}{1A202C}     % box rules and text
-\definecolor{pksoft}{HTML}{6B7785}    % secondary notes; stages outside the contribution
-\definecolor{pkacc}{HTML}{2F855A}     % the one accent: the evaluated boundary
+% Shared TikZ styles for figures/fig_pipeline_scope.tex and figures/fig_pipeline_upstream.tex.
+\definecolor{pkink}{HTML}{1A202C}
+\definecolor{pksoft}{HTML}{6B7785}
+\definecolor{pkacc}{HTML}{2F855A}
 \tikzset{
   pk/.style = {
     font=\footnotesize,
